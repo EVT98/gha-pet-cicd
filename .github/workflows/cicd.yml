@@ -60,3 +60,31 @@ jobs:
           name: app-jar-v${{ github.run_number }}
           path: target/*.jar
           retention-days: 1
+  
+  tests:
+    needs: build
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Test
+        run: mvn -B test
+
+      - name: Upload the test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-v${{ github.run_number }}
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+    
+
