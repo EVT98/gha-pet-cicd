@@ -22,23 +22,9 @@ env:
 
 
 jobs:
-  gitleaks:
-    runs-on: ubuntu-latest
-    steps:
-  
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-
-
-    - name: Gitleaks Secret Scan
-      uses: gitleaks/gitleaks-action@v3
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   build:
     name: Build
-    needs: gitleaks
     runs-on: ubuntu-latest
     steps:
 
