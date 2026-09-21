@@ -123,7 +123,18 @@ jobs:
             -Dsonar.java.binaries=target/classes
       - name: Debug Sonar report
         run: cat .scannerwork/report-task.txt
-   
+
+      - name: Test SonarCloud CE API
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          CE_TASK_URL=$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d'=' -f2-)
+      
+          echo "Testing CE Task API..."
+          curl -i \
+            -u "${SONAR_TOKEN}:" \
+            "$CE_TASK_URL"
+
       - name: SonarCloud Quality Gate Check
         id: quality-gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
