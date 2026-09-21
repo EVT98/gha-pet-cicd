@@ -121,6 +121,8 @@ jobs:
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.java.binaries=target/classes
+      - name: Debug Sonar report
+        run: cat .scannerwork/report-task.txt
    
       - name: SonarCloud Quality Gate Check
         id: quality-gate
