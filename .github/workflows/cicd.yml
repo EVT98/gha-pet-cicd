@@ -86,5 +86,17 @@ jobs:
           name: surefire-reports-v${{ github.run_number }}
           path: target/surefire-reports/
           if-no-files-found: ignore
-    
+
+  sonar:
+    runs-on: ubuntu-latest
+    steps: 
+        
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        
+      - name: Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
 
