@@ -110,16 +110,20 @@ jobs:
       - name: Debug Sonar report
         run: cat .scannerwork/report-task.txt
 
-      - name: Test SonarCloud CE API
+      - name: Test SonarCloud Quality Gate API
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          CE_TASK_URL=$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d'=' -f2-)
+          ANALYSIS_ID=$(curl -s \
+            -u "${SONAR_TOKEN}:" \
+            "$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d'=' -f2-)" \
+            | jq -r '.task.analysisId')
       
-          echo "Testing CE Task API..."
+          echo "Analysis ID: $ANALYSIS_ID"
+      
           curl -i \
             -u "${SONAR_TOKEN}:" \
-            "$CE_TASK_URL"
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${ANALYSIS_ID}"
 
       - name: SonarCloud Quality Gate Check
         id: quality-gate
