@@ -115,7 +115,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
@@ -128,7 +128,7 @@ jobs:
         with:
           sonar-project-key: ${{ env.SONAR_PROJECT_KEY }}
           sonar-host-url: https://sonarcloud.io
-          sonar-token: ${{ env.SONAR_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           branch: dev
           fail-on–quality-gate-error: false
