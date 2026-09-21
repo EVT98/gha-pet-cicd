@@ -17,6 +17,8 @@ env:
   AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
   ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
   ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+  SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
 
 
 jobs:
@@ -118,7 +120,7 @@ jobs:
         run: >
           mvn -B
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+          -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
           -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
           -Dsonar.host.url=https://sonarcloud.io
 
