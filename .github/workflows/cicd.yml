@@ -131,5 +131,5 @@ jobs:
           sonar-token: ${{ secrets.SONAR_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           branch: dev
-          fail-on–quality-gate-error: false
+          fail-on-quality-gate-error: false
   
