@@ -52,7 +52,7 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                name: app-jar-v{{ github.run_number}}
+                name: app-jar-v${{ github.run_number}}
                 path: target/*.jar
                 retention-days: 1
     unitTest:
@@ -115,6 +115,42 @@ jobs:
                     -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
                     -Dsonar.java.binaries=target/classes
 
+    trivy-scan-vulnerability:
+        needs: SonarCloud-scan
+        runs-on: ubuntu-latest
+        steps:
 
+            - uses: actions/checkout@v4
+
+            - name: Set up JDK ${{ env.JAVA_VERSION }}
+              uses: actions/setup-java@v4
+              with:
+                java-version: ${{ env.JAVA_VERSION }}
+                distribution: 'temurin'
             
-      
+            - name: Maven dependencies
+              run: mvn -B depency:resolve -DskipTests --no-transfer-progress
+    
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: app-jar-v${{ github.run_number}}
+                path: target
+            
+            - name: Run Trivy vulnerability scanner in fs mode
+              uses: aquasecurity/trivy-action@vmaster
+              with:
+                scan-type: 'fs'
+                scan-ref: '.'
+                format: 'table'
+                exit-code: '0'
+                severity: 'CRITICAL,HIGH'
+                ignore-unfixed: true
+            
+            - name: Upload the report
+              uses: actions/upload-artifact@v4
+              with:
+                name: trivy-fs-report
+                path: trivy-results.*
+                if-no-files-found: ignore
+          
