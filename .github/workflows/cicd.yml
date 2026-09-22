@@ -19,6 +19,13 @@ env:
   ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
   SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
   SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+  VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID}}
+  VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID}}
+  VAULT_ADDR: ${{ secrets.VAULT_ADDR}}
+  VAULT_JFROG_PATH: secrets/creds/jfrog
+  JFOG_URL: ${{ secrets.JF_URL }}
+  JFROG_REPO: 'devops-project'
+  
 
 
 jobs:
@@ -93,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
         
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
         
@@ -129,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
@@ -166,5 +173,46 @@ jobs:
           name: trivy-fs-report
           path: trivy-results.*
           if-no-files-found: ignore
+  
+  publish:
+    needs: [ sonar, trivy ]
+    runs-on: ubuntu-latest
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push'
+
+    steps:
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - name: Download the artifaction
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar-v${{ github.run_number }}
+          path: target
+      
+      - name: Authenticate to Vault & Fecth JFrog credentials
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ env.VAULT_ADDR}}
+          method: approle
+          roleId: ${{ env.VAULT_ROLE_ID }}
+          secretId: ${{ env.VAULT_SECRET_ID }}
+          secrets: |
+            ${{ env.VAULT_JFROG_PATH }} username | JF_USER
+            ${{ env.VAULT_JFROG_PATH }} password | JF_PASSWORD
+            
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ env.JFROG_URL }}
+          JF_USER: ${{ env.JF_USER }}
+          JF_PASSWORD: ${{ env.JF_PASSWORD }}
+    
+      - name: Upload JAR to Artifactory
+        run: jf rt upload "target/*.jar" ${{ env.JFROG_REPO }}/
+  
     
           
