@@ -1,0 +1,56 @@
+name: PetClinic - CI/CD Pipeline
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+    contents: read
+    id-token: write
+    packages: write
+
+env:
+    JAVA_VERSION: '25'
+
+jobs:
+    gitleaks:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                fetch-depth: 0
+      
+            - name: Gitleaks scan
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+
+    build:
+        needs: gitleaks
+        runs-on: ubuntu-latest
+        steps:
+
+            - uses: actions/checkout@v4
+              with: 
+                fetch-depth: 0
+            
+            - name: Set up JDK ${{ env.JAVA_VERSION }}
+              uses: actions/setup-java@V4
+              with:
+                java-version: ${{ env.JAVA_VERSION }}
+                distribution: 'temurin'
+                cache: maven
+            
+            - name: Build the artifact
+              run: mvn -B clean package -DskipTests
+            
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: app-jar-v{{ github.run_number}}
+                path: target/.*jar
+                retention-days: 1
+
+      
