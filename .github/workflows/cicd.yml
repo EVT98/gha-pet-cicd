@@ -142,8 +142,7 @@ jobs:
       
       - name: Populate Maven Cache
         run: |
-          mvn -B dependency:resolve -D -DskipTests \
-            --no-transfer-progress
+          mvn -B dependency:resolve -D -DskipTests --no-transfer-progress
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
