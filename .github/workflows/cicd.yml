@@ -178,7 +178,7 @@ jobs:
     needs: [ sonar, trivy ]
     runs-on: ubuntu-latest
     if: |
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/dev' &&
       github.event_name == 'push'
 
     steps:
