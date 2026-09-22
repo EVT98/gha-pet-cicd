@@ -138,7 +138,7 @@ jobs:
                 path: target
             
             - name: Run Trivy vulnerability scanner in fs mode
-              uses: aquasecurity/trivy-action@vmaster
+              uses: aquasecurity/trivy-action@master
               with:
                 scan-type: 'fs'
                 scan-ref: '.'
@@ -153,4 +153,5 @@ jobs:
                 name: trivy-fs-report
                 path: trivy-results.*
                 if-no-files-found: ignore
+            
           
