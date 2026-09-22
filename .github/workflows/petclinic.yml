@@ -50,7 +50,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: app-jar-v{{ github.run_number}}
-                path: target/.*jar
+                path: target/*.jar
                 retention-days: 1
 
             
