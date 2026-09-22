@@ -201,7 +201,7 @@ jobs:
           roleId: ${{ env.VAULT_ROLE_ID }}
           secretId: ${{ env.VAULT_SECRET_ID }}
           secrets: |
-            ${{ env.VAULT_JFROG_PATH }} username | JF_USER
+            ${{ env.VAULT_JFROG_PATH }} username | JF_USER ;
             ${{ env.VAULT_JFROG_PATH }} password | JF_PASSWORD
             
       - name: Setup JFrog CLI
