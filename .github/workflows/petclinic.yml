@@ -16,6 +16,10 @@ env:
     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+    VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+    VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+    VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+    VAULT_JFROG_PATH: secret/creds/jfrog
 
 jobs:
     gitleaks:
@@ -154,4 +158,40 @@ jobs:
                 path: trivy-results.*
                 if-no-files-found: ignore
             
-          
+    publish:
+        needs: [ SonarCloud-scan, trivy-scan-vulnerability]
+        runs-on: ubuntu-latest
+        if: |
+            github.ref =='refs/head/dev' && 
+            github.event_name == 'push'
+        steps:
+
+
+            - name: Download JAR File
+              uses: actions/dowload-artifact@v4
+              with:
+                name: app-jar-v${{ github.run_number}}
+                path: target
+            
+            - name: Authenticate to Vault & retrive JFrog credentials
+              uses: hashicorp/vault-action@v3
+              with:
+                url: ${{ env.VAULT_ADDR }}
+                method: approle
+                roleId: ${{ env.VAULT_ROLE_ID }}
+                secretId: ${{ env.VAULT_SECRET_ID }}
+                secrets: |
+                    ${{ env.VAULT_JFROG_PATH }} username | JF_USER
+                    ${{ env.VAULT_JFROG_PATH }} password | JF_PASSWORD
+            
+            - name: Set up JFrog CLI
+              uses: jfrog/setup-jfrog-cli@v4
+              with:
+                JF_URL: ${{ secrets.JF_URL }}
+                JF_USER: ${{ env.JF_USER }}
+                JF_PASSWORD: ${{ env.JF_PASSWORD }}
+            
+            - name: Upload JAR file to artifactory
+              run: jf rt upload "target/*.jar" ${{ env.JFROG_REPO }}
+                
+        
