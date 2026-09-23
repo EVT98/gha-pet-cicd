@@ -20,6 +20,11 @@ env:
     VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
     VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
     VAULT_JFROG_PATH: secret/creds/jfrog
+    AWS_ROLE_ARN_ECR: ${{ secrets.AWS_ROLE_ARN_ECR }}
+    AWS_REGION: ${{ vars.AWS_REGION }}
+    AWS_ROLE_ARN_ECS: ${{ secrets.AWS_ROLE_ARN_ECS }}
+    ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+    JFROG_REPO: 'devops-project'
 
 jobs:
     gitleaks:
@@ -193,3 +198,33 @@ jobs:
             
             - name: Upload JAR file to artifactory
               run: jf rt upload "target/*.jar" ${{ env.JFROG_REPO }}
+
+    dockerImage:
+        runs-on: ubuntu-latest
+        steps:
+
+            - uses: actions/checkout@v4
+              
+            - name: Connexion to GHCR
+              uses: docker/logiin-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Configure AWS credentials
+              uses: actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ env.AWS_ROLE_ARN_ECR }}
+                aws-region: ${{ env.AWS_REGION }}
+            
+            - name: Connexion to ECR
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build & push image
+              uses: docker/build-push-action@v6
+              with: 
+                context: . 
+                push: true 
+                tags: |
+                  ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/gha-lab:latest
