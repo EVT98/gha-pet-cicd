@@ -162,7 +162,7 @@ jobs:
         needs: [ SonarCloud-scan, trivy-scan-vulnerability]
         runs-on: ubuntu-latest
         if: |
-            github.ref =='refs/head/dev' && 
+            github.ref =='refs/heads/dev' && 
             github.event_name == 'push'
         steps:
 
