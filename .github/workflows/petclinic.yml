@@ -193,5 +193,3 @@ jobs:
             
             - name: Upload JAR file to artifactory
               run: jf rt upload "target/*.jar" ${{ env.JFROG_REPO }}
-                
-        
